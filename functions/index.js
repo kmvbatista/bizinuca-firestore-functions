@@ -20,17 +20,12 @@ admin.initializeApp();
       }
       const parsedDate = new Date(createdData.date._seconds * 1000).toDateString();
       admin.firestore().doc(`points/${player.id}-${parsedDate}`).set(point);
-      console.log(parsedDate)
     });
-    console.log(createdData);
-    console.log(createdData.date);
  });
 
- exports.createUniqueUser = functions.https.onRequest((req, res) => {
+ exports.createUniqueUser = functions.https.onRequest(async (req, res) => {
     const user = req.body;
-    admin.firestore().doc(`users/${user.name}`).get().then(res => {
-        console.log(res);
-    });
+    const result = await admin.firestore().collection('users').where('name', '==', `aaaaaaaaaaaa`).get()
     // 
   });
 
