@@ -24,9 +24,28 @@ admin.initializeApp();
  });
 
  exports.createUniqueUser = functions.https.onRequest(async (req, res) => {
-    const user = req.body;
-    const result = await admin.firestore().collection('users').where('name', '==', `aaaaaaaaaaaa`).get()
-    // 
+   try {
+      const user = req.body;
+      user.email = user.email.replace('\t', '');
+      user.name = user.name.replace('\t', '');
+      user.password = user.password.replace('\t', '');
+
+      const result = await admin.firestore().collection('users').where('name', '==', `${user.name}`).get();
+      if(result.docs.length == 0){
+         const userCreated = await admin.auth().createUser({
+            email: user.email,
+            password: user.password,
+            displayName: user.name,
+         });
+         delete user['password'];
+         user.id = userCreated.uid;
+         await admin.firestore().doc(`users/${userCreated.uid}`).create(user);
+      }
+      return res.status(200).json('Everything is allright');
+   }
+   catch(e) {
+      return res.status(500).json('Deu erro, irmão');
+   }
   });
 
 
