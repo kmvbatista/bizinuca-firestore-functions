@@ -3,10 +3,6 @@ const admin = require('firebase-admin');
 
 admin.initializeApp();
 
-// // Start writing Firebase Functions
-// // https://firebase.google.com/docs/functions/typescript
-//
-
  exports.onCreateMatch = functions.firestore.document('/matches/{matchId}').onCreate( dataComming => {
     let createdData = dataComming.data();
     let {players} = dataComming.data();
@@ -31,6 +27,7 @@ admin.initializeApp();
       user.password = user.password.replace('\t', '');
 
       const result = await admin.firestore().collection('users').where('name', '==', `${user.name}`).get();
+      console.log(result)
       if(result.docs.length == 0){
          const userCreated = await admin.auth().createUser({
             email: user.email,
@@ -43,8 +40,9 @@ admin.initializeApp();
       }
       return res.status(200).json('Everything is allright');
    }
-   catch(e) {
-      return res.status(500).json('Deu erro, irmão');
+   catch(error) {
+      console.log(error);
+      return res.status(500).json('Something went wrong!');
    }
   });
 
