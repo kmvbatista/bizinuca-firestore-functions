@@ -47,14 +47,16 @@ exports.getOverallStatistics = functions.https.onRequest(async (req, res) => {
    const user = req.body;
    console.log(user)
    try{
-      const userMatches = (admin.firestore().collection('matches').where('players', 'array-contains', `${user.name}`)
+      const pointsPerDayPromise = admin.firestore().collection('points').where('playerId', '==', `${user.id}`).get();
+      const userMatches = (await admin.firestore().collection('matches').where('players', 'array-contains', `${user.name}`)
       .get()).docs.map(x => x.data());
-      const pointsPerDay = (await admin.firestore().collection('points').where('playerId', '==', `${user.id}`).get()).docs.map(x => x.data());
       const wonMatches = userMatches.filter(x => x.winners.includes(user.name));
+      const mostWinnerPartner = getMostWinnerPartner(wonMatches, user.name);
       const totalWonMatches = wonMatches.length;
       const totalWonMatchesThisMonth = wonMatches.filter(x => new Date(x.date._seconds * 1000).getMonth() == today.getMonth()).length;
       const totalPlayedMatches =  userMatches.length;
-      res.status(200).json({userMatches, pointsPerDay, totalWonMatches, totalWonMatchesThisMonth, totalPlayedMatches});
+      const pointsPerDay = (await pointsPerDayPromise).docs.map(x => x.data());
+      res.status(200).json({userMatches, mostWinnerPartner, pointsPerDay, totalWonMatches, totalWonMatchesThisMonth, totalPlayedMatches});
    }
    catch(e) {
       console.log(e);
@@ -90,6 +92,25 @@ const recalculatePlayersPoints = (players, winnerSide) => {
       players.players[3].points = players.players[2].points + players.expectedPoints;
    }
    return players;
+}
+
+const getMostWinnerPartner = (wonMatches, username) => {
+   const partnersList = wonMatches.map( x=> x.winners.find(y => y !== username));
+   let counts = {};
+   let mostFrequent;
+   let compare = 0;
+   partnersList.forEach(partner => {
+      if(counts[partner] === undefined){
+      counts[partner] = 1;
+      }else{
+         counts[partner] = counts[partner] + 1;
+      }
+      if(counts[partner] > compare) {
+         compare = counts[partner];
+         mostFrequent = partner;
+      }
+   })
+   return mostFrequent;
 }
 
 const isLeftSideWinner = (winnerSide) => winnerSide == 0 ? true : false;
