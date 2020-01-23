@@ -48,7 +48,7 @@ exports.getOverallStatistics = functions.https.onRequest(async (req, res) => {
    console.log(user)
    try{
       const pointsPerDayPromise = admin.firestore().collection('points').where('playerId', '==', `${user.id}`).get();
-      const userMatches = (await admin.firestore().collection('matches').where('players', 'array-contains', `${user.name}`)
+      const userMatches = (await admin.firestore().collection('matches').where('players', 'array-contains', `${user.name}`).orderBy('date', 'desc')
       .get()).docs.map(x => x.data());
       const wonMatches = userMatches.filter(x => x.winners.includes(user.name));
       const mostWinnerPartner = getMostWinnerPartner(wonMatches, user.name);
