@@ -80,35 +80,35 @@ const createOfficialUser = async (user) => {
 }
 
 const recalculatePlayersPoints = (winners, losers) => {
-   const pointsDifference = (winners[0].points + winners[1].points)/2 - (losers[0].points + losers[1].points)/2;
-   console.log(pointsDifference);
+   const pointsDifference = (winners[0].points + winners[1].points) - (losers[0].points + losers[1].points);
+   console.log(Math.abs(pointsDifference));
    const expectedPoints = getExpectedPoints(Math.abs(pointsDifference));
    console.log(expectedPoints);
    let pointsToAdd= 0;
    if(winnersHasBiggerRating) {
-      winners.forEach(w => { pointsToAdd = w.points + 10*(1-expectedPoints.sup); console.log(pointsToAdd); w.points = Math.round(pointsToAdd)});
-      losers.forEach(l => { pointsToAdd = l.points + 10*(0-expectedPoints.inf); l.points = Math.round(pointsToAdd)});
+      winners.forEach(w => { pointsToAdd = w.points + 10*(1-expectedPoints.sup); w.points = pointsToAdd});
+      losers.forEach(l => { pointsToAdd = l.points + 10*(0-expectedPoints.inf); l.points = pointsToAdd});
    }
    else {
-      winners.forEach(w => { pointsToAdd = w.points + 10*(1-expectedPoints.inf); w.points = Math.round(pointsToAdd)});
-      losers.forEach(l => { pointsToAdd = l.points + 10*(0-expectedPoints.sup); l.points = Math.round(pointsToAdd)});
+      winners.forEach(w => { pointsToAdd = w.points + 10*(1-expectedPoints.inf); w.points = pointsToAdd});
+      losers.forEach(l => { pointsToAdd = l.points + 10*(0-expectedPoints.sup); l.points = pointsToAdd});
    }
    return [...winners, ...losers];
 }
 
 const getMostWinnerPartner = (wonMatches, username) => {
    const partnersList = wonMatches.map( x => x.winners.find( y => y !== username));
-   let counts = {};
+   let partnersCounter = {};
    let mostFrequent;
-   let benchMarkPoints = 0;
+   let mostFrequentPartnerCounter = 0;
    partnersList.forEach(partner => {
-      if(counts[partner] === undefined){
-      counts[partner] = 1;
+      if(partnersCounter[partner] === undefined){
+      partnersCounter[partner] = 1;
       }else{
-         counts[partner] = counts[partner] + 1;
+         partnersCounter[partner] = partnersCounter[partner] + 1;
       }
-      if(counts[partner] > benchMarkPoints) {
-         benchMarkPoints = counts[partner];
+      if(partnersCounter[partner] > mostFrequentPartnerCounter) {
+         mostFrequentPartnerCounter = partnersCounter[partner];
          mostFrequent = partner;
       }
    })
@@ -169,7 +169,7 @@ const getExpectedPoints = (pointsDifference) => {
    if(pointsDifference < 411) return {sup: 0.92, inf: 0.08};
    if(pointsDifference < 432) return {sup: 0.93, inf: 0.07};
    if(pointsDifference < 456) return {sup: 0.94, inf: 0.06};
-   if(pointsDifference < 484) return {sup: 0.95, inf: 0.5};
+   if(pointsDifference < 484) return {sup: 0.95, inf: 0.05};
    if(pointsDifference < 517) return {sup: 0.96, inf: 0.04};
    if(pointsDifference < 559) return {sup: 0.97, inf: 0.03};
    if(pointsDifference < 619) return {sup: 0.98, inf: 0.02};
